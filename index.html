@@ -362,13 +362,27 @@ function defaultState(){
     eind:{gc:["","","","",""],punten:["","",""],berg:["","",""],rodeLantaarn:[""]}
   };
 }
+function normalize(s){
+  const d=defaultState();
+  const out=Object.assign({}, d, s||{});
+  out.config=Object.assign({}, d.config, (s&&s.config)||{});
+  out.deelnemers=Array.isArray(s&&s.deelnemers)?s.deelnemers:[];
+  out.aangemeld=Array.isArray(s&&s.aangemeld)?s.aangemeld:[];
+  out.keuzes=(s&&typeof s.keuzes==='object'&&s.keuzes)||{};
+  out.loting=(s&&typeof s.loting==='object'&&s.loting)||{};
+  out.uitslagen=(s&&typeof s.uitslagen==='object'&&s.uitslagen)||{};
+  out.weights=Object.assign({...DEFAULT_WEIGHTS},(s&&s.weights)||{});
+  out.eind=Object.assign({gc:["","","","",""],punten:["","",""],berg:["","",""],rodeLantaarn:[""]},(s&&s.eind)||{});
+  out.gelockt=!!(s&&s.gelockt);
+  return out;
+}
 function loadState(){
   // 1) probeer localStorage
-  try{const ls=localStorage.getItem(LS_KEY); if(ls){return JSON.parse(ls);}}catch(e){}
-  // 2) probeer ingebedde seed (voor auto-gegenereerde versie)
+  try{const ls=localStorage.getItem(LS_KEY); if(ls){return normalize(JSON.parse(ls));}}catch(e){}
+  // 2) probeer ingebedde seed (bijgewerkt door de geplande taken)
   try{
     const seed=JSON.parse(document.getElementById('poule-state').textContent);
-    if(seed && !seed.__seed__) return seed;
+    if(seed && !seed.__seed__) return normalize(seed);
   }catch(e){}
   return defaultState();
 }
