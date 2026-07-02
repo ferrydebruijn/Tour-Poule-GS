@@ -142,6 +142,7 @@
   <!-- STAND -->
   <section class="view active" id="v-stand">
     <div id="standBanner"></div>
+    <div class="card" id="aanmeldCard" style="display:none"></div>
     <div class="card">
       <h2><span class="dot"></span>Tussenstand</h2>
       <table id="standTable"><thead><tr>
@@ -355,6 +356,7 @@ function defaultState(){
     keuzes:{},   // naam -> [rider names]
     loting:{},   // naam -> [rider names]
     gelockt:false,
+    aangemeld:[],
     weights:{...DEFAULT_WEIGHTS},
     uitslagen:{}, // stageNr -> {catKey: riderName}
     eind:{gc:["","","","",""],punten:["","",""],berg:["","",""],rodeLantaarn:[""]}
@@ -436,7 +438,23 @@ function computeStandings(){
 }
 
 /* ===================== RENDER ===================== */
-function renderAll(){ renderChrome(); renderStand(); renderTeam(); renderStages(); renderSettings(); renderRules(); renderHead(); }
+function renderAll(){ renderChrome(); renderAanmeld(); renderStand(); renderTeam(); renderStages(); renderSettings(); renderRules(); renderHead(); }
+
+function renderAanmeld(){
+  const c=document.getElementById('aanmeldCard'); if(!c) return;
+  // vóór de loting: toon wie zich al aangemeld hebben (namen). Na publiceren/vergrendelen: verbergen.
+  const gepubliceerd = S.deelnemers.length>0 && S.gelockt;
+  const lijst = (S.aangemeld && S.aangemeld.length) ? S.aangemeld
+              : (admin ? S.deelnemers : []);
+  if(gepubliceerd){ c.style.display="none"; return; }
+  c.style.display="block";
+  const chips = lijst.length
+    ? lijst.map(n=>`<span class="tag" style="border-color:#3a4a13;color:#d7e8a0">✔︎ ${n}</span>`).join(" ")
+    : `<span class="muted small">Nog niemand aangemeld — wees de eerste via de tab <b>Meedoen</b>!</span>`;
+  c.innerHTML = `<h2><span class="dot" style="background:var(--groen)"></span>Al aangemeld <span class="cnt">(${lijst.length})</span></h2>
+    <div class="row" style="gap:6px">${chips}</div>
+    <div class="hint">Wie 5 renners heeft ingestuurd verschijnt hier. De gekozen renners blijven geheim tot de loting — daarna zie je alle teams bij <b>Renners</b>.</div>`;
+}
 
 function renderChrome(){
   // beheer-tabbladen verbergen voor kijkers
@@ -719,6 +737,7 @@ admin = (function(){try{return localStorage.getItem('tp_admin')==='1';}catch(e){
 try{
   const seed=JSON.parse(document.getElementById('poule-state').textContent);
   if(seed && !seed.__seed__){
+    if(Array.isArray(seed.aangemeld)) S.aangemeld = seed.aangemeld;
     if(seed.uitslagen){
       S.uitslagen=S.uitslagen||{};
       Object.keys(seed.uitslagen).forEach(nr=>{

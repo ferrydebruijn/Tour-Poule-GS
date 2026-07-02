@@ -52,6 +52,8 @@ def main():
     p.add_argument("--eind-berg", default=None)
     p.add_argument("--eind-lantaarn", default=None)
     p.add_argument("--roster", default=None)
+    p.add_argument("--aanmeldingen", default=None,
+                   help='puntkomma-gescheiden namen die zich hebben aangemeld, bijv. "Ferry;Olaf;Bommel"')
     a = p.parse_args()
 
     html = load_html()
@@ -68,6 +70,16 @@ def main():
                 state[k] = imp[k]
         # neem ook uitslagen/eind uit import als die er zijn en lokaal nog leeg
         print("Roster ingeladen:", len(state.get("deelnemers",[])), "deelnemers")
+
+    # Aanmeldingenlijst (namen die zich hebben ingeschreven)
+    if a.aanmeldingen is not None:
+        names = [x.strip() for x in a.aanmeldingen.split(";") if x.strip()]
+        # dedupe met behoud van volgorde
+        seen=set(); uniq=[]
+        for n in names:
+            if n.lower() not in seen: seen.add(n.lower()); uniq.append(n)
+        state["aangemeld"] = uniq
+        print("Aanmeldingen bijgewerkt:", len(uniq), "->", uniq)
 
     # Etappe-uitslag
     if a.stage is not None:
