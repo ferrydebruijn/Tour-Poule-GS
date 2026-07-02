@@ -119,6 +119,34 @@
     </div>
   </section>
 
+  <!-- MEEDOEN (inschrijfformulier) -->
+  <section class="view" id="v-doemee">
+    <div class="banner">Kies hier je <b>5 renners</b> en verstuur. De beheerder verwerkt alle inzendingen, doet daarna de loting (5 extra renners per persoon) en publiceert de definitieve poule. Je hoeft dit maar één keer te doen.</div>
+    <div class="card">
+      <h2><span class="dot" style="background:var(--groen)"></span>Doe mee — kies je 5 renners</h2>
+      <form name="renners" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/bedankt.html">
+        <input type="hidden" name="form-name" value="renners">
+        <p hidden><label>Laat leeg: <input name="bot-field"></label></p>
+        <div class="field"><label>Jouw naam</label>
+          <input type="text" name="deelnemer" placeholder="Bijv. Ferry" required></div>
+        <div class="field"><label>Renner 1</label>
+          <input type="text" name="renner1" list="riderlist" placeholder="Begin te typen…" required autocomplete="off"></div>
+        <div class="field"><label>Renner 2</label>
+          <input type="text" name="renner2" list="riderlist" placeholder="Begin te typen…" required autocomplete="off"></div>
+        <div class="field"><label>Renner 3</label>
+          <input type="text" name="renner3" list="riderlist" placeholder="Begin te typen…" required autocomplete="off"></div>
+        <div class="field"><label>Renner 4</label>
+          <input type="text" name="renner4" list="riderlist" placeholder="Begin te typen…" required autocomplete="off"></div>
+        <div class="field"><label>Renner 5</label>
+          <input type="text" name="renner5" list="riderlist" placeholder="Begin te typen…" required autocomplete="off"></div>
+        <div class="field"><label>Opmerking (optioneel)</label>
+          <input type="text" name="opmerking" placeholder=""></div>
+        <button class="btn gr" type="submit" style="width:100%;padding:12px">✔︎ Verstuur mijn 5 renners</button>
+      </form>
+      <div class="hint">Tip: typ een deel van de achternaam, dan verschijnt de renner in de lijst. Alle 184 Tour-renners zijn beschikbaar.</div>
+    </div>
+  </section>
+
   <!-- DEELNEMERS & RENNERS -->
   <section class="view" id="v-team">
     <div id="lockBanner"></div>
@@ -204,6 +232,7 @@
 
 <nav class="tabs">
   <button class="tab active" data-v="stand" onclick="show('stand')"><span class="ic">🏆</span>Stand</button>
+  <button class="tab" data-v="doemee" onclick="show('doemee')"><span class="ic">✋</span>Meedoen</button>
   <button class="tab" data-v="team" onclick="show('team')"><span class="ic">👥</span>Renners</button>
   <button class="tab" data-v="etappes" onclick="show('etappes')"><span class="ic">🚩</span>Etappes</button>
   <button class="tab" data-v="instel" onclick="show('instel')"><span class="ic">⚙️</span>Instellingen</button>
