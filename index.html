@@ -419,8 +419,8 @@ function renderChrome(){
 }
 
 function renderHead(){
-  document.getElementById('potHead').textContent = euro0(totalPot());
-  document.getElementById('inlegHint').textContent = S.config.inleg;
+  const ph=document.getElementById('potHead'); if(ph) ph.textContent = euro0(totalPot());
+  const ih=document.getElementById('inlegHint'); if(ih) ih.textContent = S.config.inleg;
 }
 
 function renderStand(){
