@@ -66,6 +66,14 @@
   .rider-line:last-child{border-bottom:none}
   .rider-line .idx{width:16px;color:var(--muted);font-size:11px}
   .rider-line .team{color:var(--muted);font-size:11px}
+  .subhead{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);
+    margin:8px 0 2px;font-weight:700}
+  .subhead.k{color:var(--geel)} .subhead.l{color:#7fb0ff}
+  .legend{display:flex;gap:14px;font-size:11.5px;color:var(--muted);margin:2px 0 4px}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .dotk{width:9px;height:9px;border-radius:50%;background:var(--geel);display:inline-block}
+  .dotl{width:9px;height:9px;border-radius:50%;background:#7fb0ff;display:inline-block}
+  .cnt{font-size:11px;color:var(--muted);font-weight:500}
   .chosen{color:var(--geel)} .drawn{color:#7fb0ff}
   .pill{font-size:10px;padding:1px 7px;border-radius:10px;margin-left:auto}
   .pill.k{background:#3a2f00;color:var(--geel)} .pill.l{background:#12233d;color:#7fb0ff}
@@ -156,7 +164,7 @@
         <input type="text" id="newPart" placeholder="Naam deelnemer" style="flex:1;min-width:140px">
         <button class="btn" onclick="addPart()">+ Toevoegen</button>
       </div>
-      <div class="hint">Voeg iedereen toe vóór de loting. €<span id="inlegHint">20</span> p.p. — pas aan bij Instellingen.</div>
+      <div class="hint" id="teamHint">Voeg iedereen toe vóór de loting. €<span id="inlegHint">20</span> p.p. — pas aan bij Instellingen.</div>
     </div>
 
     <div class="card" id="lotingCard">
@@ -462,13 +470,22 @@ function renderTeam(){
     `${chosenOK}/${need} deelnemers hebben ${S.config.nKeuze} renners gekozen. ` +
     (lotDone?`<b style="color:var(--good)">Loting gedaan ✓</b>`:`Loting nog niet uitgevoerd.`);
 
+  const th=document.getElementById('teamHint');
+  if(th) th.innerHTML = admin
+    ? `Voeg iedereen toe vóór de loting. €${S.config.inleg} p.p. — pas aan bij Instellingen.`
+    : `Overzicht van alle deelnemers met hun <b style="color:var(--geel)">gekozen</b> en <b style="color:#7fb0ff">bijgelote</b> renners.`;
+
   const wrap=document.getElementById('partList'); wrap.innerHTML="";
-  if(!S.deelnemers.length){ wrap.innerHTML=`<div class="card muted small">Nog geen deelnemers.</div>`; }
-  const assigned = allAssigned();
+  if(!S.deelnemers.length){ wrap.innerHTML=`<div class="card muted small">Nog geen deelnemers. Zodra de beheerder de inzendingen verwerkt en de loting doet, verschijnt hier ieders team.</div>`; }
+  if(S.deelnemers.length){
+    const lg=document.createElement('div'); lg.className="legend";
+    lg.innerHTML=`<span><span class="dotk"></span>Gekozen</span><span><span class="dotl"></span>Bijgeloot</span>`;
+    wrap.appendChild(lg);
+  }
   S.deelnemers.forEach(d=>{
     const block=document.createElement('div'); block.className="part-block";
     const keuze=S.keuzes[d]||[]; const lot=S.loting[d]||[];
-    let riders="";
+    let riders=`<div class="subhead k">Gekozen <span class="cnt">(${S.config.nKeuze})</span></div>`;
     for(let i=0;i<S.config.nKeuze;i++){
       const val=keuze[i]||"";
       if(!admin || S.gelockt){
@@ -480,6 +497,7 @@ function renderTeam(){
           <span class="pill k">keuze</span></div>`;
       }
     }
+    if(lot.length){ riders += `<div class="subhead l">Bijgeloot <span class="cnt">(${lot.length})</span></div>`; }
     for(let i=0;i<lot.length;i++){ riders += riderRow("L"+(i+1),lot[i],"l"); }
     block.innerHTML = `<div class="part-head"><span class="nm">${d}</span>
       ${(admin && !S.gelockt)?`<button class="btn dz" onclick="delPart('${enc(d)}')">verwijderen</button>`:""}</div>${riders}`;
@@ -692,5 +710,3 @@ renderAll();
 </script>
 </body>
 </html>
-
-<!-- formdetectie 1783024933 -->
