@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tourpoule — Tour de France 2026</title>
+<style>
+  :root{
+    --geel:#f5c518; --groen:#1b9e46; --bol:#e23b3b; --wit:#f4f4f4;
+    --bg:#0f1115; --card:#171a21; --card2:#1e222c; --line:#2a2f3a;
+    --txt:#e9edf4; --muted:#9aa4b2; --accent:#f5c518; --accent2:#1b9e46;
+    --good:#2ecc71; --bad:#e74c3c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;padding-bottom:70px}
+  header{background:linear-gradient(120deg,#111 0%,#1a1d25 60%,#242a12 100%);
+    padding:18px 16px 14px;border-bottom:3px solid var(--geel);position:relative}
+  header h1{margin:0;font-size:20px;letter-spacing:.3px}
+  header .sub{color:var(--muted);font-size:12.5px;margin-top:3px}
+  .pot{position:absolute;right:14px;top:14px;text-align:right}
+  .pot .big{font-size:22px;font-weight:800;color:var(--geel)}
+  .pot .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  main{max-width:820px;margin:0 auto;padding:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  h2{font-size:15px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:9px;height:9px;border-radius:50%;background:var(--geel)}
+  .muted{color:var(--muted)}
+  .small{font-size:12px}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);font-size:13.5px}
+  th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .rank{width:26px;color:var(--muted);font-weight:700}
+  .rank.g1{color:var(--geel)} .rank.g2{color:#c9c9c9} .rank.g3{color:#cd7f32}
+  .euro{font-weight:700;color:var(--geel)}
+  .pos{color:var(--good)} .neg{color:var(--bad)}
+  input,select,button{font-family:inherit;font-size:14px}
+  input[type=text],input[type=number],select{background:var(--card2);color:var(--txt);
+    border:1px solid var(--line);border-radius:9px;padding:9px 10px;width:100%}
+  input:focus,select:focus{outline:none;border-color:var(--geel)}
+  button{cursor:pointer;border:none;border-radius:9px;padding:9px 14px;font-weight:600}
+  .btn{background:var(--geel);color:#1a1a1a}
+  .btn.sec{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+  .btn.gr{background:var(--groen);color:#fff}
+  .btn.dz{background:transparent;color:var(--bad);border:1px solid var(--bad);padding:6px 10px;font-size:12px}
+  .btn:active{transform:translateY(1px)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .tag{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:20px;
+    padding:3px 9px;font-size:11.5px;color:var(--muted)}
+  .tag.ned{border-color:#e37b00;color:#ffb14d}
+  .jersey{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;margin-right:5px}
+  .jgeel{background:var(--geel)} .jgroen{background:var(--groen)} .jbol{background:var(--bol)}
+  .jwit{background:var(--wit)} .jrood{background:#c0392b} .jnl{background:#e37b00}
+  nav.tabs{position:fixed;bottom:0;left:0;right:0;background:#0c0e12;border-top:1px solid var(--line);
+    display:flex;z-index:50}
+  nav.tabs button{flex:1;background:none;color:var(--muted);border:none;border-radius:0;padding:10px 4px 12px;
+    font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
+  nav.tabs button .ic{font-size:18px}
+  nav.tabs button.active{color:var(--geel)}
+  .view{display:none} .view.active{display:block}
+  .part-block{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--card2)}
+  .part-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+  .part-head .nm{font-weight:700;font-size:15px}
+  .rider-line{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:13px;border-bottom:1px dashed #232833}
+  .rider-line:last-child{border-bottom:none}
+  .rider-line .idx{width:16px;color:var(--muted);font-size:11px}
+  .rider-line .team{color:var(--muted);font-size:11px}
+  .chosen{color:var(--geel)} .drawn{color:#7fb0ff}
+  .pill{font-size:10px;padding:1px 7px;border-radius:10px;margin-left:auto}
+  .pill.k{background:#3a2f00;color:var(--geel)} .pill.l{background:#12233d;color:#7fb0ff}
+  details{border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--card2)}
+  summary{padding:11px 12px;cursor:pointer;font-weight:600;font-size:13.5px;list-style:none;display:flex;
+    justify-content:space-between;align-items:center;gap:8px}
+  summary::-webkit-details-marker{display:none}
+  .stagebody{padding:0 12px 12px}
+  .field{margin-bottom:8px}
+  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .banner{background:#20260f;border:1px solid #3a4a13;color:#d7e8a0;padding:10px 12px;border-radius:10px;font-size:12.5px;margin-bottom:12px}
+  .banner.warn{background:#2a1a10;border-color:#5a3418;color:#f0c08a}
+  .kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .kv:last-child{border-bottom:none}
+  .stagestatus{font-size:11px;color:var(--muted)}
+  .stagestatus.done{color:var(--good)}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+  hr{border:none;border-top:1px solid var(--line);margin:12px 0}
+  .lock-badge{font-size:11px;padding:3px 9px;border-radius:20px}
+  .lock-badge.open{background:#123d1f;color:#6be08e} .lock-badge.locked{background:#3d2b12;color:#f0c08a}
+  ::placeholder{color:#5b6472}
+  .bignum{font-size:13px;font-weight:700}
+  .datalist-wrap{position:relative}
+  a{color:var(--geel)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🚴 Tourpoule — Tour de France 2026</h1>
+  <div class="sub">4 – 26 juli 2026 · Barcelona → Parijs · 21 etappes</div>
+  <div class="pot"><div class="big" id="potHead">€0</div><div class="lbl">totale pot</div></div>
+</header>
+
+<main>
+  <!-- STAND -->
+  <section class="view active" id="v-stand">
+    <div id="standBanner"></div>
+    <div class="card">
+      <h2><span class="dot"></span>Tussenstand</h2>
+      <table id="standTable"><thead><tr>
+        <th class="rank">#</th><th>Deelnemer</th><th class="num">Etappes</th>
+        <th class="num">Eind</th><th class="num">Totaal</th><th class="num">Saldo</th>
+      </tr></thead><tbody></tbody></table>
+      <div class="hint">Saldo = gewonnen bedrag − inleg. De <em>niet-benutte</em> pot (categorieën gewonnen door renners die niemand heeft) wordt na de laatste etappe naar rato van het verdiende bedrag herverdeeld.</div>
+    </div>
+    <div class="card" id="onbenutCard">
+      <h2><span class="dot" style="background:var(--muted)"></span>Nog niet benut</h2>
+      <div class="kv"><span>Onbenutte pot t/m nu</span><span class="euro" id="onbenutBedrag">€0</span></div>
+      <div class="hint">Wordt aan het eind verdeeld. In de kolom “Totaal” hierboven is dit nog niet meegerekend.</div>
+    </div>
+  </section>
+
+  <!-- DEELNEMERS & RENNERS -->
+  <section class="view" id="v-team">
+    <div id="lockBanner"></div>
+    <div class="card">
+      <h2><span class="dot"></span>Deelnemers <span id="lockState"></span></h2>
+      <div class="row" id="addPartRow">
+        <input type="text" id="newPart" placeholder="Naam deelnemer" style="flex:1;min-width:140px">
+        <button class="btn" onclick="addPart()">+ Toevoegen</button>
+      </div>
+      <div class="hint">Voeg iedereen toe vóór de loting. €<span id="inlegHint">20</span> p.p. — pas aan bij Instellingen.</div>
+    </div>
+
+    <div class="card" id="lotingCard">
+      <h2><span class="dot" style="background:var(--groen)"></span>Loting</h2>
+      <p class="small muted" style="margin-top:0">Iedere deelnemer kiest eerst <b>5</b> renners. Als iedereen gekozen heeft, deelt de loting willekeurig nog <b>5</b> renners per persoon uit de resterende pool toe.</p>
+      <div class="row">
+        <button class="btn gr" onclick="doLoting()">🎲 Loting uitvoeren (5 per persoon)</button>
+        <button class="btn sec" onclick="undoLoting()">Loting wissen</button>
+      </div>
+      <div class="hint" id="lotingStatus"></div>
+    </div>
+
+    <div id="partList"></div>
+  </section>
+
+  <!-- ETAPPES -->
+  <section class="view" id="v-etappes">
+    <div class="banner" id="etappeBanner"></div>
+    <div class="card">
+      <h2><span class="dot"></span>Etappe-uitslagen invoeren</h2>
+      <p class="small muted" style="margin-top:0">Per etappe vul je in wie er won op elke categorie. De verdeling van de dagpot en de stand rekenen automatisch door. Bij de automatische update worden deze velden 's avonds voor je ingevuld.</p>
+      <div id="stageList"></div>
+    </div>
+  </section>
+
+  <!-- INSTELLINGEN -->
+  <section class="view" id="v-instel">
+    <div class="card">
+      <h2><span class="dot"></span>Instellingen</h2>
+      <div class="grid2">
+        <div class="field"><label>Inleg per persoon (€)</label>
+          <input type="number" id="cfgInleg" min="0" step="1" oninput="setInleg(this.value)"></div>
+        <div class="field"><label>Aantal renners kiezen</label>
+          <input type="number" id="cfgKeuze" min="1" max="15" step="1" oninput="setNum('nKeuze',this.value)"></div>
+        <div class="field"><label>Aantal renners loten</label>
+          <input type="number" id="cfgLoting" min="0" max="15" step="1" oninput="setNum('nLoting',this.value)"></div>
+        <div class="field"><label>Deel pot naar etappes (%)</label>
+          <input type="number" id="cfgEtappePct" min="0" max="100" step="1" oninput="setPct(this.value)"></div>
+      </div>
+      <div class="kv"><span>Naar dagetappes</span><span class="bignum" id="showEtappePot">€0</span></div>
+      <div class="kv"><span>Naar eindklassement-bonus</span><span class="bignum" id="showEindPot">€0</span></div>
+      <div class="kv"><span>Pot per dagetappe</span><span class="bignum" id="showStagePot">€0</span></div>
+      <hr>
+      <h2 style="font-size:13px"><span class="dot" style="background:var(--bol)"></span>Verdeling per dagetappe (gewichten)</h2>
+      <div id="weightsBox" class="small"></div>
+      <div class="hint">De dagpot wordt over deze categorieën verdeeld naar verhouding van de gewichten.</div>
+      <hr>
+      <div class="row">
+        <button class="btn sec" onclick="exportData()">⬇︎ Exporteer data (JSON)</button>
+        <button class="btn sec" onclick="document.getElementById('importFile').click()">⬆︎ Importeer data</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="lockBtn" onclick="toggleLock()">🔒 Renners vergrendelen</button>
+        <button class="btn dz" onclick="resetAll()">Alles resetten</button>
+      </div>
+      <div class="hint">Exporteer je data en stuur 'm naar mij om de automatische dagelijkse update aan te zetten.</div>
+    </div>
+  </section>
+
+  <!-- REGELS -->
+  <section class="view" id="v-regels">
+    <div class="card">
+      <h2><span class="dot"></span>Spelregels & puntentelling</h2>
+      <p class="small">Elke deelnemer legt <b>€<span id="rInleg">20</span></b> in. Iedereen kiest <b>5</b> renners; daarna worden er per persoon <b>5</b> renners geloot uit de overige deelnemers. Je hebt dus <b>10</b> renners.</p>
+      <p class="small"><b>Per dagetappe</b> wordt een deel van de pot verdeeld over de renner die die dag als eerste eindigt (en 2e, 3e), de rode lantaarn van de dag (laatste), plus de dragers van de gele, groene en bolletjestrui, de laatste in het algemeen klassement, én de beste Nederlander van die dag.</p>
+      <div class="small" id="rulesWeights"></div>
+      <p class="small"><b>Na de slotetappe</b> gaat een bonus (het eindklassement-deel van de pot) naar de top 5 van het eindklassement, de top 3 van de groene en bolletjestrui, en de laatste in het eindklassement.</p>
+      <p class="small">Wint een renner die door <b>meerdere</b> deelnemers is gekozen? Dan wordt dat bedrag gelijk verdeeld. Categorieën die gewonnen worden door een renner die <b>niemand</b> heeft, gaan in de onbenutte pot en worden aan het eind naar rato herverdeeld.</p>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs">
+  <button class="tab active" data-v="stand" onclick="show('stand')"><span class="ic">🏆</span>Stand</button>
+  <button class="tab" data-v="team" onclick="show('team')"><span class="ic">👥</span>Renners</button>
+  <button class="tab" data-v="etappes" onclick="show('etappes')"><span class="ic">🚩</span>Etappes</button>
+  <button class="tab" data-v="instel" onclick="show('instel')"><span class="ic">⚙️</span>Instellingen</button>
+  <button class="tab" data-v="regels" onclick="show('regels')"><span class="ic">📖</span>Regels</button>
+</nav>
+
+<script id="poule-state" type="application/json">
+{"__seed__":true}
+</script>
+
+<script>
+/* ===================== DATA ===================== */
+const RIDERS = [
+["Tiesj Benoot","Decathlon CMA CGM","BEL"],["Cees Bol","Decathlon CMA CGM","NED"],["Daan Hoole","Decathlon CMA CGM","NED"],["Olav Kooij","Decathlon CMA CGM","NED"],["Aurélien Paret-Peintre","Decathlon CMA CGM","FRA"],["Nicolas Prodhomme","Decathlon CMA CGM","FRA"],["Matthew Riccitello","Decathlon CMA CGM","USA"],["Paul Seixas","Decathlon CMA CGM","FRA"],
+["Mattia Cattaneo","Red Bull–BORA–hansgrohe","ITA"],["Nico Denz","Red Bull–BORA–hansgrohe","GER"],["Tim van Dijke","Red Bull–BORA–hansgrohe","NED"],["Remco Evenepoel","Red Bull–BORA–hansgrohe","BEL"],["Maxim Van Gils","Red Bull–BORA–hansgrohe","BEL"],["Jai Hindley","Red Bull–BORA–hansgrohe","AUS"],["Florian Lipowitz","Red Bull–BORA–hansgrohe","GER"],["Jan Tratnik","Red Bull–BORA–hansgrohe","SLO"],
+["Phil Bauhaus","Bahrain Victorious","GER"],["Damiano Caruso","Bahrain Victorious","ITA"],["Kamil Gradek","Bahrain Victorious","POL"],["Lenny Martinez","Bahrain Victorious","FRA"],["Vlad Van Mechelen","Bahrain Victorious","BEL"],["Matej Mohorič","Bahrain Victorious","SLO"],["Robert Stannard","Bahrain Victorious","AUS"],["Antonio Tiberi","Bahrain Victorious","ITA"],
+["Jonas Abrahamsen","Uno-X Mobility","NOR"],["Anthon Charmig","Uno-X Mobility","DEN"],["Magnus Cort","Uno-X Mobility","DEN"],["Anders Johannessen","Uno-X Mobility","NOR"],["Tobias Johannessen","Uno-X Mobility","NOR"],["Anders Skaarseth","Uno-X Mobility","NOR"],["Torstein Træen","Uno-X Mobility","NOR"],["Søren Wærenskjold","Uno-X Mobility","NOR"],
+["Tom Van Asbroeck","NSN Cycling Team","BEL"],["Lewis Askey","NSN Cycling Team","GBR"],["George Bennett","NSN Cycling Team","NZL"],["Marco Frigo","NSN Cycling Team","ITA"],["Biniam Girmay","NSN Cycling Team","ERI"],["Matîs Louvel","NSN Cycling Team","FRA"],["Krists Neilands","NSN Cycling Team","LAT"],["Jake Stewart","NSN Cycling Team","GBR"],
+["Xabier Mikel Azparren","Pinarello–Q36.5","ESP"],["Quinten Hermans","Pinarello–Q36.5","BEL"],["Chris Harper","Pinarello–Q36.5","AUS"],["Tom Pidcock","Pinarello–Q36.5","GBR"],["Fred Wright","Pinarello–Q36.5","GBR"],["Damien Howson","Pinarello–Q36.5","AUS"],["Brent Van Moer","Pinarello–Q36.5","BEL"],["Xandro Meurisse","Pinarello–Q36.5","BEL"],
+["Juan Ayuso","Lidl–Trek","ESP"],["Derek Gee","Lidl–Trek","CAN"],["Mads Pedersen","Lidl–Trek","DEN"],["Quinn Simmons","Lidl–Trek","USA"],["Mattias Skjelmose","Lidl–Trek","DEN"],["Toms Skujiņš","Lidl–Trek","LAT"],["Mathias Vacek","Lidl–Trek","CZE"],["Carlos Verona","Lidl–Trek","ESP"],
+["Ramses Debruyne","Alpecin–Premier Tech","BEL"],["Silvan Dillier","Alpecin–Premier Tech","SUI"],["Tim Marsman","Alpecin–Premier Tech","NED"],["Jasper Philipsen","Alpecin–Premier Tech","BEL"],["Edward Planckaert","Alpecin–Premier Tech","BEL"],["Mathieu van der Poel","Alpecin–Premier Tech","NED"],["Jonas Rickaert","Alpecin–Premier Tech","BEL"],["Emiel Verstrynge","Alpecin–Premier Tech","BEL"],
+["Pascal Ackermann","Team Jayco AlUla","GER"],["Luke Durbridge","Team Jayco AlUla","AUS"],["Felix Engelhardt","Team Jayco AlUla","GER"],["Michael Matthews","Team Jayco AlUla","AUS"],["Kelland O'Brien","Team Jayco AlUla","AUS"],["Ben O'Connor","Team Jayco AlUla","AUS"],["Luke Plapp","Team Jayco AlUla","AUS"],["Mauro Schmid","Team Jayco AlUla","SUI"],
+["Abel Balderstone","Caja Rural–Seguros RGA","ESP"],["Sebastian Berwick","Caja Rural–Seguros RGA","AUS"],["Fernando Gaviria","Caja Rural–Seguros RGA","COL"],["Alex Molenaar","Caja Rural–Seguros RGA","NED"],["Joel Nicolau","Caja Rural–Seguros RGA","ESP"],["Stefano Oldani","Caja Rural–Seguros RGA","ITA"],["Jakub Otruba","Caja Rural–Seguros RGA","CZE"],["José Félix Parra","Caja Rural–Seguros RGA","ESP"],
+["Thymen Arensman","Netcompany INEOS","NED"],["Egan Bernal","Netcompany INEOS","COL"],["Filippo Ganna","Netcompany INEOS","ITA"],["Dorian Godon","Netcompany INEOS","FRA"],["Michał Kwiatkowski","Netcompany INEOS","POL"],["Josh Tarling","Netcompany INEOS","GBR"],["Kévin Vauquelin","Netcompany INEOS","FRA"],["Tobias Foss","Netcompany INEOS","NOR"],
+["Kasper Asgreen","EF Education–EasyPost","DEN"],["Alex Baudin","EF Education–EasyPost","FRA"],["Richard Carapaz","EF Education–EasyPost","ECU"],["Ben Healy","EF Education–EasyPost","IRL"],["Sean Quinn","EF Education–EasyPost","USA"],["Georg Steinhauser","EF Education–EasyPost","GER"],["Michael Valgren","EF Education–EasyPost","DEN"],["Max Walker","EF Education–EasyPost","GBR"],
+["Davide Ballerini","XDS Astana","ITA"],["Aaron Gate","XDS Astana","NZL"],["Sergio Higuita","XDS Astana","COL"],["Max Kanter","XDS Astana","GER"],["Harold Tejada","XDS Astana","COL"],["Mike Teunissen","XDS Astana","NED"],["Simone Velasco","XDS Astana","ITA"],["Nicolas Vinokurov","XDS Astana","KAZ"],
+["Warren Barguil","Team Picnic PostNL","FRA"],["Julius van den Berg","Team Picnic PostNL","NED"],["Frits Biesterbos","Team Picnic PostNL","NED"],["Pavel Bittner","Team Picnic PostNL","CZE"],["Frank van den Broek","Team Picnic PostNL","NED"],["John Degenkolb","Team Picnic PostNL","GER"],["Robbe Dhondt","Team Picnic PostNL","BEL"],["Niklas Märkl","Team Picnic PostNL","GER"],
+["Huub Artz","Lotto–Intermarché","NED"],["Jenno Berckmoes","Lotto–Intermarché","BEL"],["Lars Craps","Lotto–Intermarché","BEL"],["Lennert Van Eetvelt","Lotto–Intermarché","BEL"],["Arnaud De Lie","Lotto–Intermarché","BEL"],["Liam Slock","Lotto–Intermarché","BEL"],["Baptiste Veistroffer","Lotto–Intermarché","FRA"],["Georg Zimmermann","Lotto–Intermarché","GER"],
+["Edoardo Affini","Team Visma–Lease a Bike","ITA"],["Bruno Armirail","Team Visma–Lease a Bike","FRA"],["Victor Campenaerts","Team Visma–Lease a Bike","BEL"],["Per Strand Hagenes","Team Visma–Lease a Bike","NOR"],["Matteo Jorgenson","Team Visma–Lease a Bike","USA"],["Sepp Kuss","Team Visma–Lease a Bike","USA"],["Davide Piganzoli","Team Visma–Lease a Bike","ITA"],["Jonas Vingegaard","Team Visma–Lease a Bike","DEN"],
+["Dylan van Baarle","Soudal–Quick-Step","NED"],["Pascal Eenkhoorn","Soudal–Quick-Step","NED"],["Bert Van Lerberghe","Soudal–Quick-Step","BEL"],["Tim Merlier","Soudal–Quick-Step","BEL"],["Valentin Paret-Peintre","Soudal–Quick-Step","FRA"],["Jasper Stuyven","Soudal–Quick-Step","BEL"],["Louis Vervaeke","Soudal–Quick-Step","BEL"],["Ilan Van Wilder","Soudal–Quick-Step","BEL"],
+["Isaac Del Toro","UAE Team Emirates XRG","MEX"],["Felix Grossschartner","UAE Team Emirates XRG","AUT"],["Brandon McNulty","UAE Team Emirates XRG","USA"],["Tadej Pogačar","UAE Team Emirates XRG","SLO"],["Nils Politt","UAE Team Emirates XRG","GER"],["Florian Vermeersch","UAE Team Emirates XRG","BEL"],["Tim Wellens","UAE Team Emirates XRG","BEL"],["Adam Yates","UAE Team Emirates XRG","GBR"],
+["Clément Berthet","Groupama–FDJ United","FRA"],["Clément Braz Afonso","Groupama–FDJ United","FRA"],["Ewen Costiou","Groupama–FDJ United","FRA"],["Lorenzo Germani","Groupama–FDJ United","FRA"],["Romain Grégoire","Groupama–FDJ United","FRA"],["Guillaume Martin-Guyonnet","Groupama–FDJ United","FRA"],["Quentin Pacher","Groupama–FDJ United","FRA"],["Clément Russo","Groupama–FDJ United","FRA"],
+["Piet Allegaert","Cofidis","BEL"],["Alex Aranburu","Cofidis","ESP"],["Jenthe Biermans","Cofidis","BEL"],["Milan Fretin","Cofidis","BEL"],["Ion Izagirre","Cofidis","ESP"],["Alex Kirsch","Cofidis","LUX"],["Hugo Page","Cofidis","FRA"],["Benjamin Thomas","Cofidis","FRA"],
+["Pablo Castrillo","Movistar Team","ESP"],["Jefferson Alveiro Cepeda","Movistar Team","ECU"],["Raúl García","Movistar Team","ESP"],["Michel Hessmann","Movistar Team","GER"],["Nelson Oliveira","Movistar Team","POR"],["Javier Romo","Movistar Team","ESP"],["Einer Rubio","Movistar Team","COL"],["Cian Uijtdebroeks","Movistar Team","BEL"],
+["Nicolas Breuillard","TotalEnergies","FRA"],["Joris Delbove","TotalEnergies","FRA"],["Alexandre Delettre","TotalEnergies","FRA"],["Thibault Guernalec","TotalEnergies","FRA"],["Jordan Jegat","TotalEnergies","FRA"],["Mathis Le Berre","TotalEnergies","FRA"],["Anthony Turgis","TotalEnergies","FRA"],["Mattéo Vercher","TotalEnergies","FRA"],
+["Julian Alaphilippe","Tudor Pro Cycling","FRA"],["Marco Haller","Tudor Pro Cycling","AUT"],["Marc Hirschi","Tudor Pro Cycling","SUI"],["Arvid de Kleijn","Tudor Pro Cycling","NED"],["Rick Pluimers","Tudor Pro Cycling","NED"],["Michael Storer","Tudor Pro Cycling","AUS"],["Matteo Trentin","Tudor Pro Cycling","ITA"],["Yannis Voisard","Tudor Pro Cycling","SUI"]
+].map(r=>({name:r[0],team:r[1],country:r[2],ned:r[2]==="NED"}));
+
+const STAGES = [
+[1,"4 jul","Barcelona (TTT)","Ploegentijdrit"],[2,"5 jul","Tarragona → Barcelona","Heuvel"],[3,"6 jul","Granollers → Les Angles","Berg"],
+[4,"7 jul","Carcassonne → Foix","Heuvel"],[5,"8 jul","Lannemezan → Pau","Vlak"],[6,"9 jul","Pau → Gavarnie-Gèdre","Berg"],
+[7,"10 jul","Hagetmau → Bordeaux","Vlak"],[8,"11 jul","Périgueux → Bergerac","Vlak"],[9,"12 jul","Malemort → Ussel","Heuvel"],
+[10,"14 jul","Aurillac → Le Lioran","Berg"],[11,"15 jul","Vichy → Nevers","Vlak"],[12,"16 jul","Magny-Cours → Chalon-sur-Saône","Vlak"],
+[13,"17 jul","Dole → Belfort","Heuvel"],[14,"18 jul","Mulhouse → Le Markstein","Berg"],[15,"19 jul","Champagnole → Plateau de Solaison","Berg"],
+[16,"21 jul","Évian → Thonon-les-Bains (ITR)","Tijdrit"],[17,"22 jul","Chambéry → Voiron","Vlak"],[18,"23 jul","Voiron → Orcières-Merlette","Berg"],
+[19,"24 jul","Gap → Alpe d'Huez","Berg"],[20,"25 jul","Le Bourg-d'Oisans → Alpe d'Huez","Berg"],[21,"26 jul","Thoiry → Parijs","Vlak"]
+].map(s=>({nr:s[0],date:s[1],route:s[2],type:s[3]}));
+
+// dagcategorieën: sleutel, label, jersey-klasse
+const CATS = [
+  {k:"rit1",label:"Ritwinnaar (1e)",j:"jwit"},
+  {k:"rit2",label:"Rit 2e",j:"jwit"},
+  {k:"rit3",label:"Rit 3e",j:"jwit"},
+  {k:"rodeLantaarn",label:"Rode lantaarn (laatste v/d dag)",j:"jrood"},
+  {k:"geleTrui",label:"Gele trui (leider)",j:"jgeel"},
+  {k:"groeneTrui",label:"Groene trui (punten)",j:"jgroen"},
+  {k:"bolletjes",label:"Bolletjestrui (berg)",j:"jbol"},
+  {k:"lantaarnGC",label:"Laatste klassement",j:"jrood"},
+  {k:"besteNL",label:"Beste Nederlander v/d dag",j:"jnl"},
+];
+const DEFAULT_WEIGHTS = {rit1:4,rit2:2,rit3:1,rodeLantaarn:1,geleTrui:4,groeneTrui:2,bolletjes:2,lantaarnGC:1,besteNL:2};
+// eindklassement-bonus als fractie van totale pot (som = 0.286)
+const EIND = {
+  gc:[0.10,0.05,0.01,0.005,0.0025],
+  punten:[0.03,0.015,0.0075],
+  berg:[0.03,0.015,0.0075],
+  rodeLantaarn:[0.0135]
+};
+
+/* ===================== STATE ===================== */
+const LS_KEY = "tourpoule_tdf2026_v1";
+let S;
+
+function defaultState(){
+  return {
+    config:{inleg:20, nKeuze:5, nLoting:5, etappePct:71.4},
+    deelnemers:[],
+    keuzes:{},   // naam -> [rider names]
+    loting:{},   // naam -> [rider names]
+    gelockt:false,
+    weights:{...DEFAULT_WEIGHTS},
+    uitslagen:{}, // stageNr -> {catKey: riderName}
+    eind:{gc:["","","","",""],punten:["","",""],berg:["","",""],rodeLantaarn:[""]}
+  };
+}
+function loadState(){
+  // 1) probeer localStorage
+  try{const ls=localStorage.getItem(LS_KEY); if(ls){return JSON.parse(ls);}}catch(e){}
+  // 2) probeer ingebedde seed (voor auto-gegenereerde versie)
+  try{
+    const seed=JSON.parse(document.getElementById('poule-state').textContent);
+    if(seed && !seed.__seed__) return seed;
+  }catch(e){}
+  return defaultState();
+}
+function save(){ try{localStorage.setItem(LS_KEY, JSON.stringify(S));}catch(e){} renderAll(); }
+
+/* ===================== HELPERS ===================== */
+const euro = v => "€"+ (Math.round(v*100)/100).toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
+const euro0 = v => "€"+ Math.round(v).toLocaleString("nl-NL");
+function totalPot(){ return S.config.inleg * S.deelnemers.length; }
+function etappePot(){ return totalPot() * (S.config.etappePct/100); }
+function eindPot(){ return totalPot() * (1 - S.config.etappePct/100); }
+function stagePot(){ return etappePot()/STAGES.length; }
+function weightSum(){ return Object.values(S.weights).reduce((a,b)=>a+b,0); }
+function catEuro(catKey){ return stagePot() * (S.weights[catKey]/weightSum()); }
+
+// map rider name -> array of owners
+function ownerMap(){
+  const m={};
+  S.deelnemers.forEach(d=>{
+    (S.keuzes[d]||[]).concat(S.loting[d]||[]).forEach(r=>{
+      if(!r) return; (m[r]=m[r]||[]).push(d);
+    });
+  });
+  return m;
+}
+function allAssigned(){ // renners die al vergeven zijn (keuze of loting)
+  const s=new Set();
+  S.deelnemers.forEach(d=>{ (S.keuzes[d]||[]).forEach(r=>s.add(r)); (S.loting[d]||[]).forEach(r=>s.add(r)); });
+  return s;
+}
+
+/* ===================== SCORING ===================== */
+function computeStandings(){
+  const owners = ownerMap();
+  const res = {}; // naam -> {etappes, eind}
+  S.deelnemers.forEach(d=> res[d]={etappes:0, eind:0});
+  let onbenut = 0;
+
+  // dagetappes
+  STAGES.forEach(st=>{
+    const u = S.uitslagen[st.nr]; if(!u) return;
+    CATS.forEach(c=>{
+      const rider = u[c.k]; if(!rider) return;
+      const amt = catEuro(c.k);
+      const ow = owners[rider];
+      if(ow && ow.length){ const each=amt/ow.length; ow.forEach(o=> res[o].etappes+=each); }
+      else onbenut += amt;
+    });
+  });
+
+  // eindklassement-bonus
+  const applyEind = (arr, fracs)=>{
+    arr.forEach((rider,i)=>{
+      if(!rider || fracs[i]==null) return;
+      const amt = totalPot()*fracs[i];
+      const ow = owners[rider];
+      if(ow && ow.length){ const each=amt/ow.length; ow.forEach(o=> res[o].eind+=each); }
+      else onbenut += amt;
+    });
+  };
+  applyEind(S.eind.gc, EIND.gc);
+  applyEind(S.eind.punten, EIND.punten);
+  applyEind(S.eind.berg, EIND.berg);
+  applyEind(S.eind.rodeLantaarn, EIND.rodeLantaarn);
+
+  return {res, onbenut};
+}
+
+/* ===================== RENDER ===================== */
+function renderAll(){ renderStand(); renderTeam(); renderStages(); renderSettings(); renderRules(); renderHead(); }
+
+function renderHead(){
+  document.getElementById('potHead').textContent = euro0(totalPot());
+  document.getElementById('inlegHint').textContent = S.config.inleg;
+}
+
+function renderStand(){
+  const {res,onbenut} = computeStandings();
+  const rows = S.deelnemers.map(d=>{
+    const e=res[d].etappes, k=res[d].eind, t=e+k, saldo=t - S.config.inleg;
+    return {d,e,k,t,saldo};
+  }).sort((a,b)=> b.t-a.t);
+  const tb = document.querySelector('#standTable tbody'); tb.innerHTML="";
+  if(!rows.length){ tb.innerHTML=`<tr><td colspan="6" class="muted small">Nog geen deelnemers — voeg ze toe bij Renners.</td></tr>`; }
+  rows.forEach((r,i)=>{
+    const rk = i<3?`g${i+1}`:"";
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td class="rank ${rk}">${i+1}</td><td>${r.d}</td>
+      <td class="num">${euro(r.e)}</td><td class="num">${euro(r.k)}</td>
+      <td class="num euro">${euro(r.t)}</td>
+      <td class="num ${r.saldo>=0?'pos':'neg'}">${r.saldo>=0?'+':''}${euro(r.saldo)}</td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('onbenutBedrag').textContent = euro(onbenut);
+
+  // banner: aantal etappes ingevoerd
+  const done = STAGES.filter(s=>{const u=S.uitslagen[s.nr]; return u && Object.values(u).some(v=>v);}).length;
+  const b=document.getElementById('standBanner');
+  if(!S.deelnemers.length){ b.innerHTML=`<div class="banner warn">Nog niets ingesteld. Ga naar <b>Renners</b> om deelnemers toe te voegen en de loting te doen.</div>`; }
+  else if(done===0){ b.innerHTML=`<div class="banner">Pot van <b>${euro0(totalPot())}</b> · ${S.deelnemers.length} deelnemers. De Tour begint 4 juli — zodra er uitslagen zijn verschijnt de stand hier.</div>`; }
+  else { b.innerHTML=`<div class="banner">Bijgewerkt t/m <b>${done}</b> van ${STAGES.length} etappes.</div>`; }
+}
+
+function riderOptions(selected){
+  // datalist-based; return options string of names
+  return RIDERS.map(r=>`<option value="${r.name}">`).join("");
+}
+
+function renderTeam(){
+  // lock state
+  const ls=document.getElementById('lockState');
+  ls.innerHTML = S.gelockt?`<span class="lock-badge locked">🔒 vergrendeld</span>`:`<span class="lock-badge open">✎ open</span>`;
+  document.getElementById('addPartRow').style.display = S.gelockt?"none":"flex";
+  document.getElementById('lotingCard').style.display = S.gelockt?"none":"block";
+
+  // loting status
+  const need = S.deelnemers.length;
+  const chosenOK = S.deelnemers.filter(d=> (S.keuzes[d]||[]).filter(x=>x).length>=S.config.nKeuze).length;
+  const lotDone = S.deelnemers.length && S.deelnemers.every(d=> (S.loting[d]||[]).filter(x=>x).length>=S.config.nLoting);
+  document.getElementById('lotingStatus').innerHTML =
+    `${chosenOK}/${need} deelnemers hebben ${S.config.nKeuze} renners gekozen. ` +
+    (lotDone?`<b style="color:var(--good)">Loting gedaan ✓</b>`:`Loting nog niet uitgevoerd.`);
+
+  const wrap=document.getElementById('partList'); wrap.innerHTML="";
+  if(!S.deelnemers.length){ wrap.innerHTML=`<div class="card muted small">Nog geen deelnemers.</div>`; }
+  const assigned = allAssigned();
+  S.deelnemers.forEach(d=>{
+    const block=document.createElement('div'); block.className="part-block";
+    const keuze=S.keuzes[d]||[]; const lot=S.loting[d]||[];
+    let riders="";
+    for(let i=0;i<S.config.nKeuze;i++){
+      const val=keuze[i]||"";
+      if(S.gelockt){
+        riders += riderRow(i+1,val,"k");
+      }else{
+        riders += `<div class="rider-line"><span class="idx">${i+1}</span>
+          <input list="riderlist" value="${val.replace(/"/g,'&quot;')}" placeholder="Kies renner ${i+1}"
+            onchange="setKeuze('${enc(d)}',${i},this.value)" style="flex:1">
+          <span class="pill k">keuze</span></div>`;
+      }
+    }
+    for(let i=0;i<lot.length;i++){ riders += riderRow("L"+(i+1),lot[i],"l"); }
+    block.innerHTML = `<div class="part-head"><span class="nm">${d}</span>
+      ${S.gelockt?"":`<button class="btn dz" onclick="delPart('${enc(d)}')">verwijderen</button>`}</div>${riders}`;
+    wrap.appendChild(block);
+  });
+
+  const lb=document.getElementById('lockBanner');
+  lb.innerHTML = S.gelockt
+    ? `<div class="banner">De renners zijn vergrendeld. Exporteer je data (Instellingen) en stuur 'm door om de dagelijkse auto-update aan te zetten.</div>`
+    : "";
+}
+function riderRow(idx,val,type){
+  const r=RIDERS.find(x=>x.name===val);
+  const team = r?`<span class="team">${r.team}</span>`:"";
+  const ned = r&&r.ned?`<span class="tag ned">🇳🇱</span>`:"";
+  const cls = type==="k"?"chosen":"drawn";
+  const pill = type==="k"?`<span class="pill k">keuze</span>`:`<span class="pill l">loting</span>`;
+  return `<div class="rider-line"><span class="idx">${idx}</span>
+    <span class="${cls}">${val||"—"}</span> ${ned} ${team} ${pill}</div>`;
+}
+
+function renderStages(){
+  const wrap=document.getElementById('stageList'); wrap.innerHTML="";
+  const nl = STAGES.reduce((a,s)=>a,0);
+  STAGES.forEach(st=>{
+    const u=S.uitslagen[st.nr]||{};
+    const filled = Object.values(u).some(v=>v);
+    const det=document.createElement('details');
+    let body=`<div class="stagebody"><div class="small muted" style="margin-bottom:8px">${st.route} · ${st.type}</div>`;
+    CATS.forEach(c=>{
+      const val=u[c.k]||"";
+      body += `<div class="field"><label><span class="jersey ${c.j}"></span>${c.label} — ${euro(catEuro(c.k))}</label>
+        <input list="riderlist" value="${val.replace(/"/g,'&quot;')}" placeholder="renner…"
+          onchange="setUitslag(${st.nr},'${c.k}',this.value)"></div>`;
+    });
+    body+=`<div class="row"><button class="btn sec" onclick="clearStage(${st.nr})">Etappe wissen</button></div></div>`;
+    det.innerHTML=`<summary><span><b>Etappe ${st.nr}</b> · ${st.date} <span class="small muted">${st.type}</span></span>
+      <span class="stagestatus ${filled?'done':''}">${filled?'ingevuld ✓':'leeg'}</span></summary>${body}`;
+    wrap.appendChild(det);
+  });
+  // eindklassement editor
+  const eind=document.createElement('details');
+  const g=S.eind;
+  const mk=(arr,key,labels)=> arr.map((v,i)=>`<div class="field"><label>${labels[i]} — ${euro(totalPot()*(EINDf(key,i)))}</label>
+     <input list="riderlist" value="${(v||'').replace(/"/g,'&quot;')}" placeholder="renner…" onchange="setEind('${key}',${i},this.value)"></div>`).join("");
+  eind.innerHTML = `<summary><span>🏁 <b>Eindklassement-bonus</b> <span class="small muted">na etappe 21</span></span></summary>
+    <div class="stagebody">
+      <div class="small muted" style="margin-bottom:6px">Algemeen klassement (top 5)</div>${mk(g.gc,'gc',['1e','2e','3e','4e','5e'])}
+      <div class="small muted" style="margin:8px 0 6px">Groene trui (punten, top 3)</div>${mk(g.punten,'punten',['1e','2e','3e'])}
+      <div class="small muted" style="margin:8px 0 6px">Bolletjestrui (berg, top 3)</div>${mk(g.berg,'berg',['1e','2e','3e'])}
+      <div class="small muted" style="margin:8px 0 6px">Rode lantaarn eindklassement</div>${mk(g.rodeLantaarn,'rodeLantaarn',['Laatste'])}
+    </div>`;
+  wrap.appendChild(eind);
+
+  document.getElementById('etappeBanner').innerHTML =
+    `Dagpot: <b>${euro(stagePot())}</b> per etappe · totale pot ${euro0(totalPot())}. Vul per categorie de winnende renner in.`;
+}
+function EINDf(key,i){ return EIND[key][i]||0; }
+
+function renderSettings(){
+  const c=S.config;
+  document.getElementById('cfgInleg').value=c.inleg;
+  document.getElementById('cfgKeuze').value=c.nKeuze;
+  document.getElementById('cfgLoting').value=c.nLoting;
+  document.getElementById('cfgEtappePct').value=c.etappePct;
+  document.getElementById('showEtappePot').textContent=euro(etappePot());
+  document.getElementById('showEindPot').textContent=euro(eindPot());
+  document.getElementById('showStagePot').textContent=euro(stagePot());
+  const wb=document.getElementById('weightsBox');
+  wb.innerHTML = CATS.map(c2=>`<div class="kv"><span><span class="jersey ${c2.j}"></span>${c2.label}</span>
+    <span><input type="number" min="0" step="1" value="${S.weights[c2.k]}" style="width:70px"
+      oninput="setWeight('${c2.k}',this.value)"> <span class="muted small">= ${euro(catEuro(c2.k))}</span></span></div>`).join("");
+  document.getElementById('lockBtn').textContent = S.gelockt?"🔓 Ontgrendelen":"🔒 Renners vergrendelen";
+}
+
+function renderRules(){
+  document.getElementById('rInleg').textContent=S.config.inleg;
+  document.getElementById('rulesWeights').innerHTML =
+    `<div class="kv muted" style="font-weight:600">Verdeling dagpot (${euro(stagePot())})</div>`+
+    CATS.map(c=>`<div class="kv"><span><span class="jersey ${c.j}"></span>${c.label}</span><span class="euro">${euro(catEuro(c.k))}</span></div>`).join("");
+}
+
+/* ===================== ACTIONS ===================== */
+function enc(s){return s.replace(/'/g,"\\'");}
+function show(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('v-'+v).classList.add('active');
+  document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('active', b.dataset.v===v));
+  window.scrollTo(0,0);
+}
+function addPart(){
+  const el=document.getElementById('newPart'); const n=el.value.trim(); if(!n) return;
+  if(S.deelnemers.includes(n)){ alert("Die naam bestaat al."); return; }
+  S.deelnemers.push(n); S.keuzes[n]=[]; S.loting[n]=[]; el.value=""; save();
+}
+function delPart(n){ if(!confirm("Deelnemer "+n+" verwijderen?"))return;
+  S.deelnemers=S.deelnemers.filter(x=>x!==n); delete S.keuzes[n]; delete S.loting[n]; save(); }
+function setKeuze(d,i,v){ v=v.trim();
+  S.keuzes[d]=S.keuzes[d]||[];
+  if(v && !RIDERS.find(r=>r.name===v)){ /* toestaan maar waarschuwen */ }
+  S.keuzes[d][i]=v; save(); }
+function setUitslag(nr,k,v){ S.uitslagen[nr]=S.uitslagen[nr]||{}; S.uitslagen[nr][k]=v.trim(); save(); }
+function clearStage(nr){ if(!confirm("Etappe "+nr+" wissen?"))return; delete S.uitslagen[nr]; save(); }
+function setEind(key,i,v){ S.eind[key][i]=v.trim(); save(); }
+function setInleg(v){ S.config.inleg=Math.max(0,parseFloat(v)||0); save(); }
+function setNum(key,v){ S.config[key]=Math.max(0,parseInt(v)||0); save(); }
+function setPct(v){ S.config.etappePct=Math.min(100,Math.max(0,parseFloat(v)||0)); save(); }
+function setWeight(k,v){ S.weights[k]=Math.max(0,parseFloat(v)||0); save(); }
+
+function doLoting(){
+  if(!S.deelnemers.length){ alert("Voeg eerst deelnemers toe."); return; }
+  const missing = S.deelnemers.filter(d=> (S.keuzes[d]||[]).filter(x=>x).length < S.config.nKeuze);
+  if(missing.length && !confirm(`${missing.length} deelnemer(s) hebben nog niet ${S.config.nKeuze} renners gekozen (${missing.join(", ")}). Toch loten met wat er is?`)) return;
+  // pool = renners die nog niet gekozen zijn
+  const chosen = new Set();
+  S.deelnemers.forEach(d=> (S.keuzes[d]||[]).forEach(r=>{if(r)chosen.add(r);}));
+  let pool = RIDERS.map(r=>r.name).filter(n=> !chosen.has(n));
+  // shuffle
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  const per=S.config.nLoting;
+  if(pool.length < per*S.deelnemers.length){
+    if(!confirm(`Er zijn maar ${pool.length} vrije renners voor ${per*S.deelnemers.length} lotingsplekken. Toch doorgaan? (sommigen krijgen er minder)`)) return;
+  }
+  S.deelnemers.forEach(d=> S.loting[d]=[]);
+  let idx=0;
+  for(let k=0;k<per;k++){
+    S.deelnemers.forEach(d=>{ if(idx<pool.length){ S.loting[d].push(pool[idx++]); } });
+  }
+  save(); alert("Loting uitgevoerd! Iedereen heeft "+per+" renners toegewezen gekregen.");
+}
+function undoLoting(){ if(!confirm("Loting wissen?"))return; S.deelnemers.forEach(d=>S.loting[d]=[]); save(); }
+
+function toggleLock(){
+  if(!S.gelockt){
+    if(!S.deelnemers.length){ alert("Nog geen deelnemers."); return; }
+    if(!confirm("Renners vergrendelen? Keuzes en loting kunnen daarna niet meer worden aangepast (tenzij je ontgrendelt).")) return;
+  }
+  S.gelockt=!S.gelockt; save();
+}
+function resetAll(){ if(!confirm("ALLES resetten? Alle deelnemers, renners en uitslagen worden gewist."))return;
+  S=defaultState(); save(); }
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download="tourpoule_data.json"; a.click();
+}
+function importData(ev){
+  const f=ev.target.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{ const d=JSON.parse(rd.result);
+    S=Object.assign(defaultState(),d);
+    S.config=Object.assign(defaultState().config,d.config||{});
+    S.weights=Object.assign({...DEFAULT_WEIGHTS},d.weights||{});
+    save(); alert("Data geïmporteerd."); show('stand');
+  }catch(e){ alert("Kon bestand niet lezen: "+e.message); } };
+  rd.readAsText(f);
+}
+
+/* ===================== INIT ===================== */
+// datalist met alle renners
+(function(){
+  const dl=document.createElement('datalist'); dl.id="riderlist";
+  dl.innerHTML = RIDERS.map(r=>`<option value="${r.name}">${r.team}${r.ned?' 🇳🇱':''}</option>`).join("");
+  document.body.appendChild(dl);
+})();
+S = loadState();
+// Merge automatische uitslagen uit de ingebedde seed (elke avond bijgewerkt door de geplande taak).
+// Roster/instellingen komen uit localStorage; daguitslagen + eindklassement komen uit de seed.
+try{
+  const seed=JSON.parse(document.getElementById('poule-state').textContent);
+  if(seed && !seed.__seed__){
+    if(seed.uitslagen){
+      S.uitslagen=S.uitslagen||{};
+      Object.keys(seed.uitslagen).forEach(nr=>{
+        const sv=seed.uitslagen[nr];
+        if(sv && Object.values(sv).some(v=>v)) S.uitslagen[nr]=Object.assign({},S.uitslagen[nr]||{},sv);
+      });
+    }
+    if(seed.eind){
+      ['gc','punten','berg','rodeLantaarn'].forEach(k=>{
+        if(seed.eind[k]) seed.eind[k].forEach((v,i)=>{ if(v){ S.eind[k]=S.eind[k]||[]; S.eind[k][i]=v; } });
+      });
+    }
+  }
+}catch(e){}
+// zorg dat elke deelnemer arrays heeft
+S.deelnemers.forEach(d=>{S.keuzes[d]=S.keuzes[d]||[];S.loting[d]=S.loting[d]||[];});
+if(!S.weights) S.weights={...DEFAULT_WEIGHTS};
+renderAll();
+</script>
+</body>
+</html>
