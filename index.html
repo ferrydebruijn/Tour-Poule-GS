@@ -96,7 +96,7 @@
 <body>
 <header>
   <h1>🚴 Tourpoule — Tour de France 2026</h1>
-  <div class="sub">4 – 26 juli 2026 · Barcelona → Parijs · 21 etappes</div>
+  <div class="sub">4 – 26 juli 2026 · Barcelona → Parijs · 21 etappes <span id="adminBadge"></span></div>
   <div class="pot"><div class="big" id="potHead">€0</div><div class="lbl">totale pot</div></div>
 </header>
 
@@ -226,6 +226,8 @@
       <div class="small" id="rulesWeights"></div>
       <p class="small"><b>Na de slotetappe</b> gaat een bonus (het eindklassement-deel van de pot) naar de top 5 van het eindklassement, de top 3 van de groene en bolletjestrui, en de laatste in het eindklassement.</p>
       <p class="small">Wint een renner die door <b>meerdere</b> deelnemers is gekozen? Dan wordt dat bedrag gelijk verdeeld. Categorieën die gewonnen worden door een renner die <b>niemand</b> heeft, gaan in de onbenutte pot en worden aan het eind naar rato herverdeeld.</p>
+      <hr>
+      <div id="adminControls"></div>
     </div>
   </section>
 </main>
@@ -304,6 +306,8 @@ const EIND = {
 
 /* ===================== STATE ===================== */
 const LS_KEY = "tourpoule_tdf2026_v1";
+const ADMIN_CODE = "GS-tour-2026"; // beheer-code — mag je wijzigen
+let admin = false;
 let S;
 
 function defaultState(){
@@ -394,7 +398,17 @@ function computeStandings(){
 }
 
 /* ===================== RENDER ===================== */
-function renderAll(){ renderStand(); renderTeam(); renderStages(); renderSettings(); renderRules(); renderHead(); }
+function renderAll(){ renderChrome(); renderStand(); renderTeam(); renderStages(); renderSettings(); renderRules(); renderHead(); }
+
+function renderChrome(){
+  // beheer-tabbladen verbergen voor kijkers
+  const instel=document.querySelector('nav [data-v="instel"]');
+  if(instel) instel.style.display = admin?"flex":"none";
+  const doemee=document.querySelector('nav [data-v="doemee"]');
+  if(doemee) doemee.style.display = S.gelockt?"none":"flex";
+  const badge=document.getElementById('adminBadge');
+  if(badge) badge.innerHTML = admin?`<span class="lock-badge locked">🔧 beheer aan</span>`:"";
+}
 
 function renderHead(){
   document.getElementById('potHead').textContent = euro0(totalPot());
@@ -437,8 +451,8 @@ function renderTeam(){
   // lock state
   const ls=document.getElementById('lockState');
   ls.innerHTML = S.gelockt?`<span class="lock-badge locked">🔒 vergrendeld</span>`:`<span class="lock-badge open">✎ open</span>`;
-  document.getElementById('addPartRow').style.display = S.gelockt?"none":"flex";
-  document.getElementById('lotingCard').style.display = S.gelockt?"none":"block";
+  document.getElementById('addPartRow').style.display = (admin && !S.gelockt)?"flex":"none";
+  document.getElementById('lotingCard').style.display = (admin && !S.gelockt)?"block":"none";
 
   // loting status
   const need = S.deelnemers.length;
@@ -457,7 +471,7 @@ function renderTeam(){
     let riders="";
     for(let i=0;i<S.config.nKeuze;i++){
       const val=keuze[i]||"";
-      if(S.gelockt){
+      if(!admin || S.gelockt){
         riders += riderRow(i+1,val,"k");
       }else{
         riders += `<div class="rider-line"><span class="idx">${i+1}</span>
@@ -468,7 +482,7 @@ function renderTeam(){
     }
     for(let i=0;i<lot.length;i++){ riders += riderRow("L"+(i+1),lot[i],"l"); }
     block.innerHTML = `<div class="part-head"><span class="nm">${d}</span>
-      ${S.gelockt?"":`<button class="btn dz" onclick="delPart('${enc(d)}')">verwijderen</button>`}</div>${riders}`;
+      ${(admin && !S.gelockt)?`<button class="btn dz" onclick="delPart('${enc(d)}')">verwijderen</button>`:""}</div>${riders}`;
     wrap.appendChild(block);
   });
 
@@ -498,10 +512,10 @@ function renderStages(){
     CATS.forEach(c=>{
       const val=u[c.k]||"";
       body += `<div class="field"><label><span class="jersey ${c.j}"></span>${c.label} — ${euro(catEuro(c.k))}</label>
-        <input list="riderlist" value="${val.replace(/"/g,'&quot;')}" placeholder="renner…"
+        <input list="riderlist" value="${val.replace(/"/g,'&quot;')}" placeholder="${admin?'renner…':'—'}" ${admin?'':'disabled'}
           onchange="setUitslag(${st.nr},'${c.k}',this.value)"></div>`;
     });
-    body+=`<div class="row"><button class="btn sec" onclick="clearStage(${st.nr})">Etappe wissen</button></div></div>`;
+    body+= admin?`<div class="row"><button class="btn sec" onclick="clearStage(${st.nr})">Etappe wissen</button></div></div>`:`</div>`;
     det.innerHTML=`<summary><span><b>Etappe ${st.nr}</b> · ${st.date} <span class="small muted">${st.type}</span></span>
       <span class="stagestatus ${filled?'done':''}">${filled?'ingevuld ✓':'leeg'}</span></summary>${body}`;
     wrap.appendChild(det);
@@ -510,7 +524,7 @@ function renderStages(){
   const eind=document.createElement('details');
   const g=S.eind;
   const mk=(arr,key,labels)=> arr.map((v,i)=>`<div class="field"><label>${labels[i]} — ${euro(totalPot()*(EINDf(key,i)))}</label>
-     <input list="riderlist" value="${(v||'').replace(/"/g,'&quot;')}" placeholder="renner…" onchange="setEind('${key}',${i},this.value)"></div>`).join("");
+     <input list="riderlist" value="${(v||'').replace(/"/g,'&quot;')}" placeholder="${admin?'renner…':'—'}" ${admin?'':'disabled'} onchange="setEind('${key}',${i},this.value)"></div>`).join("");
   eind.innerHTML = `<summary><span>🏁 <b>Eindklassement-bonus</b> <span class="small muted">na etappe 21</span></span></summary>
     <div class="stagebody">
       <div class="small muted" style="margin-bottom:6px">Algemeen klassement (top 5)</div>${mk(g.gc,'gc',['1e','2e','3e','4e','5e'])}
@@ -546,6 +560,14 @@ function renderRules(){
   document.getElementById('rulesWeights').innerHTML =
     `<div class="kv muted" style="font-weight:600">Verdeling dagpot (${euro(stagePot())})</div>`+
     CATS.map(c=>`<div class="kv"><span><span class="jersey ${c.j}"></span>${c.label}</span><span class="euro">${euro(catEuro(c.k))}</span></div>`).join("");
+  const ac=document.getElementById('adminControls');
+  if(ac){
+    ac.innerHTML = admin
+      ? `<div class="small muted" style="margin-bottom:6px">Beheer-modus is aan. Deelnemers, loting, uitslagen en instellingen zijn bewerkbaar. Wijzigingen op deze pagina staan lokaal — <b>exporteer</b> (Instellingen) en stuur ze door om te publiceren.</div>
+         <button class="btn sec" onclick="lockAdminMode()">🔒 Beheer-modus uit</button>`
+      : `<div class="small muted" style="margin-bottom:6px">Alleen de beheerder kan deelnemers, loting en instellingen wijzigen. Vrienden vullen hun renners in via de tab <b>Meedoen</b>.</div>
+         <button class="btn sec" onclick="unlockAdmin()">🔧 Beheer-modus (code)</button>`;
+  }
 }
 
 /* ===================== ACTIONS ===================== */
@@ -608,6 +630,16 @@ function toggleLock(){
 function resetAll(){ if(!confirm("ALLES resetten? Alle deelnemers, renners en uitslagen worden gewist."))return;
   S=defaultState(); save(); }
 
+function unlockAdmin(){
+  const c=prompt("Beheer-code:"); if(c===null) return;
+  if(c.trim()===ADMIN_CODE){
+    admin=true; try{localStorage.setItem('tp_admin','1');}catch(e){}
+    renderAll();
+    alert("Beheer-modus aan. Je kunt nu deelnemers, loting, uitslagen en instellingen bewerken.\n\nLet op: wijzigingen op deze pagina zijn lokaal. Exporteer je data (Instellingen) en stuur 'm door om te publiceren voor iedereen.");
+  } else { alert("Onjuiste code."); }
+}
+function lockAdminMode(){ admin=false; try{localStorage.removeItem('tp_admin');}catch(e){} renderAll(); show('stand'); }
+
 function exportData(){
   const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
@@ -633,6 +665,7 @@ function importData(ev){
   document.body.appendChild(dl);
 })();
 S = loadState();
+admin = (function(){try{return localStorage.getItem('tp_admin')==='1';}catch(e){return false;}})();
 // Merge automatische uitslagen uit de ingebedde seed (elke avond bijgewerkt door de geplande taak).
 // Roster/instellingen komen uit localStorage; daguitslagen + eindklassement komen uit de seed.
 try{
