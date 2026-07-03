@@ -118,6 +118,12 @@
     background:linear-gradient(90deg,var(--fr-blue) 33%,#eef1f5 33% 66%,var(--fr-red) 66%)}
   nav.tabs button{position:relative}
   .pot .big{text-shadow:0 1px 0 rgba(0,0,0,.3)}
+  .sponsors{margin:20px 0 6px;text-align:center;border-top:1px solid var(--line);padding-top:16px}
+  .sponsors .sp-title{font-size:10.5px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:10px}
+  .sponsors .sp-logos{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .sponsors .sp{display:inline-flex;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--line);
+    border-radius:11px;padding:9px 15px;font-weight:700;font-size:13.5px;color:var(--txt)}
+  .sponsors .sp::before{content:"★";color:var(--geel);font-size:11px}
 </style>
 </head>
 <body>
@@ -269,6 +275,14 @@
       <div id="adminControls"></div>
     </div>
   </section>
+
+  <footer class="sponsors">
+    <div class="sp-title">Mede mogelijk gemaakt door</div>
+    <div class="sp-logos">
+      <span class="sp">zvv Adelaars</span>
+      <span class="sp">GreenStars</span>
+    </div>
+  </footer>
 </main>
 
 <nav class="tabs">
