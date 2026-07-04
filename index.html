@@ -167,6 +167,16 @@
     </div>
   </section>
 
+  <!-- KANSEN (bookmaker-voorspelling) -->
+  <section class="view" id="v-kansen">
+    <div class="banner">🔮 <b>Bookmaker-voorspelling</b> — geschatte winkans per deelnemer op basis van hun team. Elke renner heeft een verwachte-puntenwaarde (klassement, ritzeges, truien, beste Nederlander). Gedeelde renners tellen gedeeld, want die prijs wordt ook gesplitst. Voor de lol — geen garantie!</div>
+    <div class="card">
+      <h2><span class="dot"></span>Wie is favoriet?</h2>
+      <div id="voorspelBox"></div>
+      <div class="hint" id="voorspelHint"></div>
+    </div>
+  </section>
+
   <!-- MEEDOEN (inschrijfformulier) -->
   <section class="view" id="v-doemee">
     <div class="banner">Kies hier je <b>5 renners</b> en verstuur. De beheerder verwerkt alle inzendingen, doet daarna de loting (5 extra renners per persoon) en publiceert de definitieve poule. Je hoeft dit maar één keer te doen.</div>
@@ -290,6 +300,7 @@
 
 <nav class="tabs">
   <button class="tab active" data-v="stand" onclick="show('stand')"><span class="ic">🏆</span>Stand</button>
+  <button class="tab" data-v="kansen" onclick="show('kansen')"><span class="ic">🔮</span>Kansen</button>
   <button class="tab" data-v="doemee" onclick="show('doemee')"><span class="ic">✋</span>Meedoen</button>
   <button class="tab" data-v="team" onclick="show('team')"><span class="ic">👥</span>Renners</button>
   <button class="tab" data-v="etappes" onclick="show('etappes')"><span class="ic">🚩</span>Etappes</button>
@@ -539,6 +550,21 @@ const RIDERS = [
 ["Julian Alaphilippe","Tudor Pro Cycling","FRA"],["Marco Haller","Tudor Pro Cycling","AUT"],["Marc Hirschi","Tudor Pro Cycling","SUI"],["Arvid de Kleijn","Tudor Pro Cycling","NED"],["Rick Pluimers","Tudor Pro Cycling","NED"],["Michael Storer","Tudor Pro Cycling","AUS"],["Matteo Trentin","Tudor Pro Cycling","ITA"],["Yannis Voisard","Tudor Pro Cycling","SUI"]
 ].map(r=>({name:r[0],team:r[1],country:r[2],ned:r[2]==="NED"}));
 
+// Bookmaker-inschatting: verwachte poule-waarde per renner (klassement, ritzeges, truien, beste NL).
+// Indicatief; renners die hier niet staan krijgen een kleine basiswaarde (vlucht/verrassingskans).
+const ODDS = {
+  "Tadej Pogačar":100,"Jonas Vingegaard":56,"Mathieu van der Poel":50,"Jasper Philipsen":44,"Mads Pedersen":40,
+  "Remco Evenepoel":30,"Tim Merlier":26,"Paul Seixas":22,"Olav Kooij":22,"Ben Healy":18,"Florian Lipowitz":18,
+  "Biniam Girmay":18,"Juan Ayuso":16,"Lenny Martinez":16,"Isaac Del Toro":15,"Thymen Arensman":15,"Richard Carapaz":14,
+  "Arnaud De Lie":13,"Adam Yates":10,"Romain Grégoire":9,"Cees Bol":8,"Pascal Ackermann":8,"Fernando Gaviria":8,
+  "Phil Bauhaus":7,"Kévin Vauquelin":9,"Tom Pidcock":10,"Egan Bernal":9,"Sepp Kuss":8,"Matteo Jorgenson":8,
+  "Ben O'Connor":8,"Cian Uijtdebroeks":8,"Tobias Johannessen":7,"Michael Matthews":9,"Wilco Kelderman":6,
+  "Filippo Ganna":8,"Mattias Skjelmose":8,"Julian Alaphilippe":8,"Marc Hirschi":7,"Quinn Simmons":6,"Magnus Cort":7,
+  "Mike Teunissen":5,"Dylan van Baarle":5,"Arvid de Kleijn":6,"Frank van den Broek":5,"Warren Barguil":6,
+  "Jonas Abrahamsen":6,"Michael Storer":7,"Einer Rubio":6,"Santiago Buitrago":6,"Valentin Paret-Peintre":6
+};
+function riderScore(n){ return ODDS[n] || 1; }
+
 const STAGES = [
 [1,"4 jul","Barcelona (TTT)","Ploegentijdrit"],[2,"5 jul","Tarragona → Barcelona","Heuvel"],[3,"6 jul","Granollers → Les Angles","Berg"],
 [4,"7 jul","Carcassonne → Foix","Heuvel"],[5,"8 jul","Lannemezan → Pau","Vlak"],[6,"9 jul","Pau → Gavarnie-Gèdre","Berg"],
@@ -680,7 +706,34 @@ function computeStandings(){
 }
 
 /* ===================== RENDER ===================== */
-function renderAll(){ renderChrome(); renderAanmeld(); renderStand(); renderTeam(); renderStages(); renderSettings(); renderRules(); renderHead(); }
+function renderAll(){ renderChrome(); renderAanmeld(); renderVoorspel(); renderStand(); renderTeam(); renderStages(); renderSettings(); renderRules(); renderHead(); }
+
+function renderVoorspel(){
+  const box=document.getElementById('voorspelBox'); if(!box) return;
+  const hint=document.getElementById('voorspelHint');
+  if(!S.deelnemers.length){ box.innerHTML=`<div class="muted small">Nog geen teams — de voorspelling verschijnt zodra de loting is gedaan.</div>`; if(hint)hint.innerHTML=""; return; }
+  const owners=ownerMap();
+  const rows=S.deelnemers.map(d=>{
+    let score=0;
+    [...(S.keuzes[d]||[]),...(S.loting[d]||[])].forEach(r=>{ if(!r)return; const oc=(owners[r]||[]).length||1; score+=riderScore(r)/oc; });
+    return {d,score};
+  });
+  const tot=rows.reduce((a,b)=>a+b.score,0)||1;
+  rows.forEach(r=> r.pct=100*r.score/tot);
+  rows.sort((a,b)=>b.score-a.score);
+  box.innerHTML = rows.map((r,i)=>{
+    const rk=i<3?`g${i+1}`:"";
+    return `<div style="margin-bottom:11px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:14px">
+        <span><span class="rank ${rk}">${i+1}</span> <b>${r.d}</b></span>
+        <span class="euro">${r.pct.toFixed(1)}%</span></div>
+      <div style="background:var(--card2);border:1px solid var(--line);border-radius:7px;height:12px;overflow:hidden;margin-top:4px">
+        <div style="height:100%;width:${Math.max(2,r.pct).toFixed(1)}%;background:linear-gradient(90deg,var(--groen),var(--geel))"></div></div>
+    </div>`;
+  }).join("");
+  if(hint) hint.innerHTML = `Grootste kanshebber volgens dit model: <b style="color:var(--geel)">${rows[0].d}</b>. ` +
+    `Iedereen heeft Pogačar, dus die valt tegen elkaar weg — het verschil zit in de rest van je team en je exclusieve renners.`;
+}
 
 function renderAanmeld(){
   const c=document.getElementById('aanmeldCard'); if(!c) return;
