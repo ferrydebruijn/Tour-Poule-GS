@@ -72,7 +72,7 @@ def main():
     inleg   = cfg.get("inleg", 20)
     nKeuze  = cfg.get("nKeuze", 5)
     nLoting = a.nloting if a.nloting is not None else cfg.get("nLoting", 5)
-    etappePct = cfg.get("etappePct", 71.4)
+    etappePct = cfg.get("etappePct", 75)
 
     subs = json.load(open(a.submissions, encoding="utf-8"))
     # dedupe op naam (laatste wint), volgorde = eerste keer gezien

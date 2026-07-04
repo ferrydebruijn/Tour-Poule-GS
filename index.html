@@ -394,6 +394,7 @@ const EIND = {
   berg:[0.03,0.015,0.0075],
   rodeLantaarn:[0.0135]
 };
+const EIND_SUM = [].concat(EIND.gc,EIND.punten,EIND.berg,EIND.rodeLantaarn).reduce((a,b)=>a+b,0);
 
 /* ===================== STATE ===================== */
 const LS_KEY = "tourpoule_tdf2026_v1";
@@ -403,7 +404,7 @@ let S;
 
 function defaultState(){
   return {
-    config:{inleg:20, nKeuze:5, nLoting:5, etappePct:71.4},
+    config:{inleg:20, nKeuze:5, nLoting:5, etappePct:75},
     deelnemers:[],
     keuzes:{},   // naam -> [rider names]
     loting:{},   // naam -> [rider names]
@@ -489,7 +490,7 @@ function computeStandings(){
   const applyEind = (arr, fracs)=>{
     arr.forEach((rider,i)=>{
       if(!rider || fracs[i]==null) return;
-      const amt = totalPot()*fracs[i];
+      const amt = eindPot()*(fracs[i]/EIND_SUM);
       const ow = owners[rider];
       if(ow && ow.length){ const each=amt/ow.length; ow.forEach(o=> res[o].eind+=each); }
       else onbenut += amt;
@@ -655,7 +656,7 @@ function renderStages(){
   // eindklassement editor
   const eind=document.createElement('details');
   const g=S.eind;
-  const mk=(arr,key,labels)=> arr.map((v,i)=>`<div class="field"><label>${labels[i]} — ${euro(totalPot()*(EINDf(key,i)))}</label>
+  const mk=(arr,key,labels)=> arr.map((v,i)=>`<div class="field"><label>${labels[i]} — ${euro(eindPot()*(EINDf(key,i)/EIND_SUM))}</label>
      <input list="riderlist" value="${(v||'').replace(/"/g,'&quot;')}" placeholder="${admin?'renner…':'—'}" ${admin?'':'disabled'} onchange="setEind('${key}',${i},this.value)"></div>`).join("");
   eind.innerHTML = `<summary><span>🏁 <b>Eindklassement-bonus</b> <span class="small muted">na etappe 21</span></span></summary>
     <div class="stagebody">
