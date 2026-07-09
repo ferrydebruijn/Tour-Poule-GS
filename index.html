@@ -77,6 +77,8 @@
   .chosen{color:var(--geel)} .drawn{color:#7fb0ff}
   .pill{font-size:10px;padding:1px 7px;border-radius:10px;margin-left:auto}
   .pill.k{background:#3a2f00;color:var(--geel)} .pill.l{background:#12233d;color:#7fb0ff}
+  .pill.v{background:#20321a;color:#a6e08a} .pill.uit{background:#3a1414;color:#ff9a9a}
+  .subhead.v{color:#a6e08a}
   details{border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--card2)}
   summary{padding:11px 12px;cursor:pointer;font-weight:600;font-size:13.5px;list-style:none;display:flex;
     justify-content:space-between;align-items:center;gap:8px}
@@ -284,6 +286,7 @@
       <div class="small" id="rulesWeights"></div>
       <p class="small"><b>Na de slotetappe</b> gaat een bonus (het eindklassement-deel van de pot) naar de top 5 van het eindklassement, de top 3 van de groene en bolletjestrui, en de laatste in het eindklassement.</p>
       <p class="small">Wint een renner die door <b>meerdere</b> deelnemers is gekozen? Dan wordt dat bedrag gelijk verdeeld. Categorieën die gewonnen worden door een renner die <b>niemand</b> heeft, gaan in de onbenutte pot en worden aan het eind naar rato herverdeeld.</p>
+      <p class="small">Valt een renner uit de Tour (opgave/uitsluiting)? Dan wordt hij <b>doorgestreept</b> weergegeven. De betrokken deelnemer krijgt een <b>vervanger</b> bijgeloot: een renner die nog in koers is en die niemand anders heeft. Reeds verdiende punten blijven staan; de vervanger telt mee vanaf zijn eerstvolgende etappe.</p>
       <hr>
       <div id="adminControls"></div>
     </div>
@@ -584,6 +587,24 @@
   "bolletjes": 2,
   "lantaarnGC": 1,
   "besteNL": 2
+ },
+ "uitgevallen": [
+  "Clément Berthet",
+  "Arnaud De Lie",
+  "Kelland O'Brien",
+  "Alex Molenaar",
+  "Bert Van Lerberghe",
+  "Arvid de Kleijn",
+  "Cian Uijtdebroeks"
+ ],
+ "vervangers": {
+  "Der Jordy": [
+   "Luke Durbridge"
+  ],
+  "Gertje": [
+   "Matîs Louvel",
+   "Aurélien Paret-Peintre"
+  ]
  }
 }
 </script>
@@ -677,6 +698,8 @@ function defaultState(){
     loting:{},   // naam -> [rider names]
     gelockt:false,
     aangemeld:[],
+    uitgevallen:[],
+    vervangers:{},
     weights:{...DEFAULT_WEIGHTS},
     uitslagen:{}, // stageNr -> {catKey: riderName}
     eind:{gc:["","","","",""],punten:["","",""],berg:["","",""],rodeLantaarn:[""]}
@@ -693,6 +716,8 @@ function normalize(s){
   out.uitslagen=(s&&typeof s.uitslagen==='object'&&s.uitslagen)||{};
   out.weights=Object.assign({...DEFAULT_WEIGHTS},(s&&s.weights)||{});
   out.eind=Object.assign({gc:["","","","",""],punten:["","",""],berg:["","",""],rodeLantaarn:[""]},(s&&s.eind)||{});
+  out.uitgevallen=Array.isArray(s&&s.uitgevallen)?s.uitgevallen:[];
+  out.vervangers=(s&&typeof s.vervangers==='object'&&s.vervangers)||{};
   out.gelockt=!!(s&&s.gelockt);
   return out;
 }
@@ -722,7 +747,7 @@ function catEuro(catKey){ return stagePot() * (S.weights[catKey]/weightSum()); }
 function ownerMap(){
   const m={};
   S.deelnemers.forEach(d=>{
-    (S.keuzes[d]||[]).concat(S.loting[d]||[]).forEach(r=>{
+    (S.keuzes[d]||[]).concat(S.loting[d]||[]).concat((S.vervangers&&S.vervangers[d])||[]).forEach(r=>{
       if(!r) return; (m[r]=m[r]||[]).push(d);
     });
   });
@@ -908,6 +933,11 @@ function renderTeam(){
     }
     if(lot.length){ riders += `<div class="subhead l">Bijgeloot <span class="cnt">(${lot.length})</span></div>`; }
     for(let i=0;i<lot.length;i++){ riders += riderRow("L"+(i+1),lot[i],"l"); }
+    const verv=(S.vervangers&&S.vervangers[d])||[];
+    if(verv.length){
+      riders += `<div class="subhead v">Vervangers <span class="cnt">(${verv.length})</span></div>`;
+      for(let i=0;i<verv.length;i++){ riders += riderRow("V"+(i+1),verv[i],"v"); }
+    }
     block.innerHTML = `<div class="part-head"><span class="nm">${d}</span>
       ${(admin && !S.gelockt)?`<button class="btn dz" onclick="delPart('${enc(d)}')">verwijderen</button>`:""}</div>${riders}`;
     wrap.appendChild(block);
@@ -922,10 +952,12 @@ function riderRow(idx,val,type){
   const r=RIDERS.find(x=>x.name===val);
   const team = r?`<span class="team">${r.team}</span>`:"";
   const ned = r&&r.ned?`<span class="tag ned">🇳🇱</span>`:"";
+  const uit = (S.uitgevallen||[]).includes(val);
   const cls = type==="k"?"chosen":"drawn";
-  const pill = type==="k"?`<span class="pill k">keuze</span>`:`<span class="pill l">loting</span>`;
+  const pill = type==="k"?`<span class="pill k">keuze</span>`:type==="v"?`<span class="pill v">🔄 vervanger</span>`:`<span class="pill l">loting</span>`;
+  const naamStyle = uit?'text-decoration:line-through;opacity:.5':'';
   return `<div class="rider-line"><span class="idx">${idx}</span>
-    <span class="${cls}">${val||"—"}</span> ${ned} ${team} ${pill}</div>`;
+    <span class="${cls}" style="${naamStyle}">${val||"—"}</span> ${ned} ${team} ${pill} ${uit?'<span class="pill uit">opgegeven</span>':''}</div>`;
 }
 
 function renderStages(){
