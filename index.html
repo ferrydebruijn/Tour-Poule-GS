@@ -1023,7 +1023,19 @@ function computeStandings(){
   applyEind(S.eind.berg, EIND.berg);
   applyEind(S.eind.rodeLantaarn, EIND.rodeLantaarn);
 
-  return {res, onbenut};
+  // Onbenutte pot: na de laatste etappe naar rato van het verdiende bedrag herverdelen
+  S.deelnemers.forEach(d=> res[d].herverdeeld=0);
+  const done = STAGES.filter(s=>{const u=S.uitslagen[s.nr]; return u && Object.values(u).some(v=>v);}).length;
+  const klaar = done===STAGES.length;
+  let herverdeeld=0;
+  if(klaar && onbenut>0){
+    const base = S.deelnemers.reduce((a,d)=> a+res[d].etappes+res[d].eind, 0);
+    if(base>0){
+      S.deelnemers.forEach(d=>{ const extra=onbenut*(res[d].etappes+res[d].eind)/base; res[d].herverdeeld=extra; herverdeeld+=extra; });
+    }
+  }
+
+  return {res, onbenut, klaar, herverdeeld};
 }
 
 /* ===================== RENDER ===================== */
@@ -1088,10 +1100,10 @@ function renderHead(){
 }
 
 function renderStand(){
-  const {res,onbenut} = computeStandings();
+  const {res,onbenut,klaar,herverdeeld} = computeStandings();
   const rows = S.deelnemers.map(d=>{
-    const e=res[d].etappes, k=res[d].eind, t=e+k, saldo=t - S.config.inleg;
-    return {d,e,k,t,saldo};
+    const e=res[d].etappes, k=res[d].eind, h=res[d].herverdeeld||0, t=e+k+h, saldo=t - S.config.inleg;
+    return {d,e,k,h,t,saldo};
   }).sort((a,b)=> b.t-a.t);
   const tb = document.querySelector('#standTable tbody'); tb.innerHTML="";
   if(!rows.length){ tb.innerHTML=`<tr><td colspan="6" class="muted small">Nog geen deelnemers — voeg ze toe bij Renners.</td></tr>`; }
@@ -1099,12 +1111,23 @@ function renderStand(){
     const rk = i<3?`g${i+1}`:"";
     const tr=document.createElement('tr');
     tr.innerHTML = `<td class="rank ${rk}">${i+1}</td><td>${r.d}</td>
-      <td class="num">${euro(r.e)}</td><td class="num">${euro(r.k)}</td>
+      <td class="num">${euro(r.e)}</td><td class="num">${euro(r.k + r.h)}</td>
       <td class="num euro">${euro(r.t)}</td>
       <td class="num ${r.saldo>=0?'pos':'neg'}">${r.saldo>=0?'+':''}${euro(r.saldo)}</td>`;
     tb.appendChild(tr);
   });
   document.getElementById('onbenutBedrag').textContent = euro(onbenut);
+  const onbHint=document.querySelector('#onbenutCard .hint');
+  const onbLbl=document.querySelector('#onbenutCard .kv span:first-child');
+  if(onbHint){
+    if(klaar && onbenut>0){
+      onbHint.innerHTML = `Na de slotetappe naar rato van het verdiende bedrag herverdeeld over de deelnemers (verwerkt in de kolom “Eind” en “Totaal” hierboven).`;
+      if(onbLbl) onbLbl.textContent = 'Onbenutte pot (herverdeeld)';
+    } else {
+      onbHint.innerHTML = `Wordt aan het eind verdeeld. In de kolom “Totaal” hierboven is dit nog niet meegerekend.`;
+      if(onbLbl) onbLbl.textContent = 'Onbenutte pot t/m nu';
+    }
+  }
 
   // banner: aantal etappes ingevoerd
   const done = STAGES.filter(s=>{const u=S.uitslagen[s.nr]; return u && Object.values(u).some(v=>v);}).length;
